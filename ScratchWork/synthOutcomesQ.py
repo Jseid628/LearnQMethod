@@ -6,6 +6,7 @@ def synthOutcomes(targets, covariates, embedding_dim, n_iterations, reg_Q, reg_w
     if num_timepoints is None:
         num_timepoints = len(covariates)
 
+    alpha = 0.1
     # unpacking inputs
     covariate_matrices = covariates[0:num_timepoints] 
     target_vectors = targets[0:num_timepoints]
@@ -61,9 +62,18 @@ def synthOutcomes(targets, covariates, embedding_dim, n_iterations, reg_Q, reg_w
         l2_Q = torch.sum(Q**2)
         l2_w = torch.sum(w_sol**2)
 
+        
         # loss using the optimal w for this Q
-        loss = sum(torch.sum(((Qd) - (QY @ w_sol))**2) for Qd, QY in zip(Qd_list, QY_list)) + (lambda_l2_Q * l2_Q) + (lambda_l2_w * l2_w)
-
+        q_space_loss = sum(torch.sum((Qd - QY @ w_sol)**2) 
+                   for Qd, QY in zip(Qd_list, QY_list))
+        orig_space_loss = sum(torch.sum((d - Y @ w_sol)**2) 
+                            for d, Y in zip(target_vectors, covariate_matrices))
+        loss = q_space_loss + alpha * orig_space_loss
+                # loss = sum(
+        #         torch.sum((d - Y @ w_sol)**2)
+        #         for d, Y in zip(target_vectors, covariate_matrices)
+        #     ) + lambda_l2_Q * torch.sum(Q**2)
+        
         # this is where Q is updated
         loss.backward()                 
         optimizer.step()

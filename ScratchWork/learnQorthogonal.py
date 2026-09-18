@@ -1,6 +1,7 @@
 import torch
 import sys
 import os
+import numpy as np
 stderr_backup = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 
@@ -18,6 +19,7 @@ def learnQorthogonal(targets, covariates, embedding_dim, n_iterations, reg_Q, re
     # unpacking inputs
     covariate_matrices = covariates[0:num_timepoints] 
     target_vectors = targets[0:num_timepoints]
+    target_vectors = [d.flatten() for d in target_vectors]
 
     # rows (num outcomes)
     Y_1 = covariate_matrices[0]
@@ -49,7 +51,7 @@ def learnQorthogonal(targets, covariates, embedding_dim, n_iterations, reg_Q, re
         w_var = cp.Variable(D)
         # Create a parameter for each target vector
         YQ_params = [cp.Parameter((m, D)) for _ in range(len(target_vectors))]
-        discrepancy = [cp.sum_squares(d.numpy() - YQ_param @ w_var) for YQ_param, d in zip(YQ_params, target_vectors)]
+        discrepancy = [cp.sum_squares(d.numpy() - (YQ_param @ w_var)) for YQ_param, d in zip(YQ_params, target_vectors)]
         # I believe this is where I'll add in the many many target and covariate matrices
         constraints = [cp.sum(w_var) == 1, w_var >= 0]
 
@@ -111,7 +113,7 @@ def learnQorthogonal(targets, covariates, embedding_dim, n_iterations, reg_Q, re
 
     Q_final = Q.detach().numpy()
     if not fixed_weights:
-        w_final = w_sol.detach().numpy()
+        w_final = np.round(w_sol.detach().numpy(), decimals = 2)
         return Q_final, w_final
     else:
         w_final = w_fixed.numpy()

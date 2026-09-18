@@ -92,7 +92,7 @@ factor_sim <- function(model,n,trt,k_total,t_total,variance, num_timepoints=NULL
   # importing the functions we want.
   # Morph reshapes the data, lq fits my model to it.
   morph <- reticulate::import_from_path("morphData", path = ".")
-  lq    <- reticulate::import_from_path("learnQ", path = ".")
+  lq    <- reticulate::import_from_path("synthOutcomesQ", path = ".")
 
   # Use only first num_timepoints if specified
   if (!is.null(num_timepoints) & t_total == 40) {
@@ -144,7 +144,7 @@ factor_sim <- function(model,n,trt,k_total,t_total,variance, num_timepoints=NULL
   test_covariate_matrix <- result[[4]]
   
   # using same embedding dimension for each different simulation setting. 
-  result <- lq$learnQ(train_target_vectors, train_covariate_matrices, 10L, 2000L, 1.0, 10.0, FALSE)
+  result <- lq$synthOutcomes(train_target_vectors, train_covariate_matrices, 3, 2000L, 0.0, 0.0, FALSE,ortho=FALSE)
   
   Q_matrix <- result[[1]]
   w_learnQ <- result[[2]]
@@ -161,7 +161,7 @@ factor_sim <- function(model,n,trt,k_total,t_total,variance, num_timepoints=NULL
   oracle_bias_avg <- SCMbias(model_t1[-trt,1],model_t1[trt,1],w_avg)
 
    # Add bias calculation for Q weights here:
-  oracle_bias_Q <- SCMbias(model_t1[-trt,1],model_t1[trt,1],Q_weights) # this may not be the correct dimensions.
+  oracle_bias_Q <- SCMbias(model_t1[-trt,1],model_t1[trt,1],w_learnQ) # this may not be the correct dimensions.
 
   ## calculate pre-treatment imbalance
   imbalance_sep <- rmse(t(out_control_sep),out_trt_sep,w_sep)
@@ -183,7 +183,7 @@ factor_sim <- function(model,n,trt,k_total,t_total,variance, num_timepoints=NULL
 }
 
 # factor loadings
-n <- 50 # number of units, the first unit is treated
+n <- 5 # number of units, the first unit is treated
 # mu <- c(2,1,3:n); # hand-code factor loadings for n = 5
 mu <- list(
   c = seq(5, 1, length.out = n) # N x 1 vector
