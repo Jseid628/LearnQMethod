@@ -52,7 +52,7 @@ def learnQorthogonal(targets, covariates, embedding_dim, n_iterations, reg_Q, re
         # Create a parameter for each target vector
         YQ_params = [cp.Parameter((m, D)) for _ in range(len(target_vectors))]
         discrepancy = [cp.sum_squares(d.numpy() - (YQ_param @ w_var)) for YQ_param, d in zip(YQ_params, target_vectors)]
-        # I believe this is where I'll add in the many many target and covariate matrices
+        
         constraints = [cp.sum(w_var) == 1, w_var >= 0]
 
         objective = cp.Minimize(sum(discrepancy) + (lambda_l2_w * cp.sum_squares(w_var)))
