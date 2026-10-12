@@ -11,7 +11,7 @@ torch.set_printoptions(precision=2)
 sys.stderr = stderr_backup
 
 
-def learnQorthogonal(targets, covariates, n_iterations, verbose, num_timepoints = None):
+def learnVecQ(targets, covariates, n_iterations, verbose, num_timepoints = None):
     # -------------------- EXTRACT INFO FROM INPUTS -------------------- #
     if num_timepoints is None:
         num_timepoints = len(covariates)
