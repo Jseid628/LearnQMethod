@@ -1,5 +1,4 @@
 import torch
-from tqdm import tqdm
 import learnQorthogonal as lqOrth
 import LearnVecQ as lqVec
 import numpy as np
