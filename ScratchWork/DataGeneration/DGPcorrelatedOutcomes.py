@@ -1,6 +1,4 @@
 import torch
-import learnQorthogonal as lqOrth
-import LearnVecQ as lqVec
 import numpy as np
 rng = np.random.default_rng(seed=40)
 torch.manual_seed(212)
