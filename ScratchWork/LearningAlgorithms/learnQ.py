@@ -26,6 +26,7 @@ def learnQ(targets, covariates, embedding_dim, n_iterations, reg_Q, reg_w, verbo
     else:
         Q = torch.randn(num_donors, D, dtype=torch.float64, requires_grad=True)
 
+
     # --- Define the inner QP once (structure never changes) ---
     w_var = cp.Variable(D)
     # Create a parameter for each target vector

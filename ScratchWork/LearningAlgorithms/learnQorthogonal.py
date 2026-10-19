@@ -42,7 +42,15 @@ def learnQorthogonal(targets, covariates, embedding_dim, n_iterations, reg_Q, re
         Q = torch.randn(num_donors, D, dtype=torch.float64, requires_grad=True)
 
     lambda_l2_Q = reg_Q
-    lambda_l2_w = reg_w # large penalty, otherwise this overfits to the EBM data
+    lambda_l2_w = reg_w 
+
+    # Calculate the Omega_t matrices:
+    # first, join the targets with the observations
+    total_data = [torch.cat((t, c), dim=1) for t, c in zip(target_vectors, covariate_matrices)]
+    # then, calculate the covariance matrices for each time point.
+    omega_list = [torch.cov(tot) for tot in total_data]
+    # find the "negative square roots" of the variance components omega.
+    omega_sqrts = []
     
     # --- Define the inner QP once (structure never changes) ---
     if fixed_weights:
@@ -51,7 +59,7 @@ def learnQorthogonal(targets, covariates, embedding_dim, n_iterations, reg_Q, re
         w_var = cp.Variable(D)
         # Create a parameter for each target vector
         YQ_params = [cp.Parameter((m, D)) for _ in range(len(target_vectors))]
-        discrepancy = [cp.sum_squares(d.numpy() - (YQ_param @ w_var)) for YQ_param, d in zip(YQ_params, target_vectors)]
+        discrepancy = [cp.sum_squares(d.numpy() - (YQ_param @ w_var)) for d,YQ_param in zip(target_vectors,YQ_params)]
         
         constraints = [cp.sum(w_var) == 1, w_var >= 0]
 
